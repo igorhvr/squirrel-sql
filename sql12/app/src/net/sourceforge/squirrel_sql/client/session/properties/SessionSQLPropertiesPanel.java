@@ -25,20 +25,31 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.sourceforge.squirrel_sql.fw.gui.FontChooser;
-import net.sourceforge.squirrel_sql.fw.gui.FontInfo;
-import net.sourceforge.squirrel_sql.fw.gui.IntegerField;
-import net.sourceforge.squirrel_sql.fw.gui.MultipleLineLabel;
-import net.sourceforge.squirrel_sql.fw.util.StringManager;
-import net.sourceforge.squirrel_sql.fw.util.StringManagerFactory;
+import sun.util.logging.resources.logging;
 
 import net.sourceforge.squirrel_sql.client.IApplication;
 import net.sourceforge.squirrel_sql.client.preferences.INewSessionPropertiesPanel;
 import net.sourceforge.squirrel_sql.client.session.ISession;
+import net.sourceforge.squirrel_sql.fw.gui.FontChooser;
+import net.sourceforge.squirrel_sql.fw.gui.FontInfo;
+import net.sourceforge.squirrel_sql.fw.gui.IntegerField;
+import net.sourceforge.squirrel_sql.fw.gui.MultipleLineLabel;
+import net.sourceforge.squirrel_sql.fw.persist.ValidationException;
+import net.sourceforge.squirrel_sql.fw.sql.ISQLDriver;
+import net.sourceforge.squirrel_sql.fw.util.StringManager;
+import net.sourceforge.squirrel_sql.fw.util.StringManagerFactory;
 /**
  * This panel allows the user to tailor SQL settings for a session.
  *
@@ -61,6 +72,9 @@ public class SessionSQLPropertiesPanel
 
 	/** Session properties object being maintained. */
 	private SessionProperties _props;
+    
+    /** Driver for the associated session */
+    ISQLDriver _driver = null;
 
    /**
 	 * ctor specifying the Application API.
@@ -87,7 +101,7 @@ public class SessionSQLPropertiesPanel
 	public void initialize(IApplication app)
 	{
 		_props = _app.getSquirrelPreferences().getSessionProperties();
-		_myPanel.loadData(_props);
+		_myPanel.loadData(_props, _driver);
 	}
 
 	public void initialize(IApplication app, ISession session)
@@ -98,7 +112,8 @@ public class SessionSQLPropertiesPanel
 			throw new IllegalArgumentException("Null ISession passed");
 		}
 		_props = session.getProperties();
-		_myPanel.loadData(_props);
+        _driver = session.getDriver();
+		_myPanel.loadData(_props, _driver);
 	}
 
 	public Component getPanelComponent()
@@ -118,7 +133,7 @@ public class SessionSQLPropertiesPanel
 
 	public void applyChanges()
 	{
-		_myPanel.applyChanges(_props);
+		_myPanel.applyChanges(_props, _driver);
 	}
 
 	private static final class SQLPropertiesPanel extends JPanel
@@ -156,14 +171,15 @@ public class SessionSQLPropertiesPanel
 		private final ControlMediator _controlMediator = new ControlMediator();
       private boolean _newSessionProperties;
 
-      SQLPropertiesPanel(IApplication app, boolean newSessionProperties)
+      SQLPropertiesPanel(IApplication app, 
+                         boolean newSessionProperties)
 		{
 			super();
          _newSessionProperties = newSessionProperties;
          createGUI();
 		}
 
-		void loadData(SessionProperties props)
+		void loadData(SessionProperties props, ISQLDriver driver)
 		{
 			_abortOnErrorChk.setSelected(props.getAbortOnError());
 			_writeSQLErrorsToLogChk.setSelected(props.getWriteSQLErrorsToLog());
@@ -173,7 +189,11 @@ public class SessionSQLPropertiesPanel
 			_commitOnClose.setSelected(props.getCommitOnClosingConnection());
 			_sqlNbrRowsToShowField.setInt(props.getSQLNbrRowsToShow());
 			_sqlLimitRowsChk.setSelected(props.getSQLLimitRows());
-			_stmtSepField.setText(props.getSQLStatementSeparator());
+            if (driver != null) {
+                _stmtSepField.setText(driver.getStatementSeparator());
+            } else {
+                
+            }
 			_solCommentField.setText(props.getStartOfLineComment());
          _removeMultiLineComment.setSelected(props.getRemoveMultiLineComment());
 
@@ -197,7 +217,7 @@ public class SessionSQLPropertiesPanel
 			updateControlStatus();
 		}
 
-		void applyChanges(SessionProperties props)
+		void applyChanges(SessionProperties props, ISQLDriver driver)
 		{
 			props.setAbortOnError(_abortOnErrorChk.isSelected());
 			props.setWriteSQLErrorsToLog(_writeSQLErrorsToLogChk.isSelected());
@@ -206,7 +226,15 @@ public class SessionSQLPropertiesPanel
 			props.setCommitOnClosingConnection(_commitOnClose.isSelected());
 			props.setSQLNbrRowsToShow(_sqlNbrRowsToShowField.getInt());
 			props.setSQLLimitRows(_sqlLimitRowsChk.isSelected());
-			props.setSQLStatementSeparator(_stmtSepField.getText());
+            if (driver != null) {
+                try {
+                    driver.setStatementSeparator(_stmtSepField.getText());
+                } catch (ValidationException e) {
+                    
+                }
+            } else {
+                
+            }
 			props.setStartOfLineComment(_solCommentField.getText());
          props.setRemoveMultiLineComment(_removeMultiLineComment.isSelected());
 
@@ -354,16 +382,29 @@ public class SessionSQLPropertiesPanel
 			//
 			/////////////////////////////////////////////
 
-			++gbc.gridy; // new line
-			gbc.gridx = 0;
-			gbc.gridwidth = 1;
-			pnl.add(new JLabel(s_stringMgr.getString("SessionSQLPropertiesPanel.stmtsep")), gbc);
-			++gbc.gridx;
-			pnl.add(_stmtSepField, gbc);
-			++gbc.gridx;
-			pnl.add(new RightLabel(s_stringMgr.getString("SessionSQLPropertiesPanel.solcomment")), gbc);
-			++gbc.gridx;
-			pnl.add(_solCommentField, gbc);
+        // Statement separator is now a property which is associated with 
+        // driver and not global for all sessions.  So, really makes no sense
+        // to include it in a form whose purpose is to set global properties
+        // for all sessions.
+        if (!_newSessionProperties) {
+            ++gbc.gridy; // new line
+            gbc.gridx = 0;
+            gbc.gridwidth = 1;
+            pnl.add(new JLabel(s_stringMgr.getString("SessionSQLPropertiesPanel.stmtsep")), gbc);
+            ++gbc.gridx;
+            pnl.add(_stmtSepField, gbc);
+            ++gbc.gridx;
+            pnl.add(new RightLabel(s_stringMgr.getString("SessionSQLPropertiesPanel.solcomment")), gbc);
+            ++gbc.gridx;
+            pnl.add(_solCommentField, gbc);
+        } else {
+            ++gbc.gridy; // new line
+            gbc.gridx = 0;
+            gbc.gridwidth = 1;
+            pnl.add(new JLabel(s_stringMgr.getString("SessionSQLPropertiesPanel.solcomment")), gbc);
+            ++gbc.gridx;
+            pnl.add(_solCommentField, gbc);
+        }
 
          ++gbc.gridy; // new line
          gbc.gridx = 0;

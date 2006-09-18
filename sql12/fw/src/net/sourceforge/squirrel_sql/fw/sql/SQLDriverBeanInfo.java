@@ -42,7 +42,7 @@ public class SQLDriverBeanInfo extends SimpleBeanInfo
 		super();
 		if (s_descr == null)
 		{
-			s_descr = new PropertyDescriptor[7];
+			s_descr = new PropertyDescriptor[8];
 			s_descr[0] = new PropertyDescriptor(IPropertyNames.NAME, CLAZZ, "getName", "setName");
 			s_descr[1] = new PropertyDescriptor(IPropertyNames.DRIVER_CLASS, CLAZZ, "getDriverClassName", "setDriverClassName");
 			s_descr[2] = new PropertyDescriptor(IPropertyNames.ID, CLAZZ, "getIdentifier", "setIdentifier");
@@ -52,6 +52,7 @@ public class SQLDriverBeanInfo extends SimpleBeanInfo
 								"getJarFileNameWrappers", "setJarFileNameWrappers",
 								"getJarFileNameWrapper", "setJarFileNameWrapper");
             s_descr[6] = new PropertyDescriptor(IPropertyNames.WEBSITE_URL, CLAZZ, "getWebSiteUrl", "setWebSiteUrl");
+            s_descr[7] = new PropertyDescriptor(IPropertyNames.STATEMENT_SEPARATOR, CLAZZ, "getStatementSeparator", "setStatementSeparator");
 		}
 	}
 

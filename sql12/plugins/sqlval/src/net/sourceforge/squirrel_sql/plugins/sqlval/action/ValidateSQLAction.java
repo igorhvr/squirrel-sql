@@ -115,7 +115,7 @@ public class ValidateSQLAction extends SquirrelAction implements ISessionAction
 		{
 			final SessionProperties sessionProps = _session.getProperties();
 			final WebServiceSessionProperties wssProps = _plugin.getWebServiceSessionProperties(_session);
-			final String stmtSep= sessionProps.getSQLStatementSeparator();
+			final String stmtSep= _session.getDriver().getStatementSeparator();
 			final String solComment = sessionProps.getStartOfLineComment();
 			final ValidationProps valProps = new ValidationProps(_prefs, wssProps,
 													_session.getMessageHandler(),

@@ -47,7 +47,7 @@ public class IndexDefragCommand implements ICommand {
 
 	public void execute() {
         StringBuffer sqlBuffer = new StringBuffer();
-        final String sqlSep = _session.getProperties().getSQLStatementSeparator();
+        final String sqlSep = _session.getDriver().getStatementSeparator();
         sqlBuffer.append("DBCC INDEXDEFRAG(" + _tableInfo.getCatalogName() + "," + _tableInfo.getSimpleName() + "," + _indexName + ")");
         sqlBuffer.append(" " + sqlSep + " \n");
         

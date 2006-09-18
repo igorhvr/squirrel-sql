@@ -76,6 +76,14 @@ public class SQLDriver implements ISQLDriver, Cloneable, Serializable
     /** Default Website URL for more info about the JDBC driver */
     private String _websiteUrl;
     
+    /** 
+     * Default statement separator.  If the database server has a command line
+     * utility which can be used to execute scripts, then this would be the 
+     * character or character sequence that is accepted by the utility to 
+     * separate different SQL statements from each other. 
+     */
+    private String _statementSeparator;
+    
 	/**
 	 * Ctor specifying the identifier.
 	 *
@@ -90,6 +98,7 @@ public class SQLDriver implements ISQLDriver, Cloneable, Serializable
 		_driverClassName = null;
 		_url = "";
         _websiteUrl = "";
+        _statementSeparator = "";
 	}
 
 	/**
@@ -119,6 +128,7 @@ public class SQLDriver implements ISQLDriver, Cloneable, Serializable
 		setUrl(rhs.getUrl());
 		setJDBCDriverClassLoaded(rhs.isJDBCDriverClassLoaded());
         setWebSiteUrl(rhs.getWebSiteUrl());
+        setStatementSeparator(rhs.getStatementSeparator());
 	}
 
 	/**
@@ -410,6 +420,41 @@ public class SQLDriver implements ISQLDriver, Cloneable, Serializable
                                    _websiteUrl);            
         }
     }
+
+    /**
+	 * If the database server has a command line utility which can be used to 
+	 * execute scripts, then this would be the character or character sequence 
+	 * that is accepted by the utility to separate different SQL statements 
+	 * from each other.  For example, Oracle has SQL-Plus which accepts ";".
+	 * However, Sybase uses "GO" as the statement separator.
+	 *  
+     * @return the SQL statement separator.
+     */
+	public String getStatementSeparator() {
+		return _statementSeparator;
+	}
+
+	/**
+	 * Sets the SQL statement separator. 
+	 * 
+	 * @param separator a string of chars to interpret as indicating where one
+	 *                  statement ends and another begins.
+	 *                  
+	 * @throws ValidationException if the input value failed validation
+	 */
+	public void setStatementSeparator(String separator) 
+		throws ValidationException 
+	{
+        String data = getString(separator);
+        if (!data.equals(_statementSeparator)) {
+            final String oldValue = _statementSeparator;
+            _statementSeparator = data;
+            PropertyChangeReporter pcr = getPropertyChangeReporter();
+            pcr.firePropertyChange(ISQLDriver.IPropertyNames.STATEMENT_SEPARATOR,
+                                   oldValue,
+                                   _statementSeparator);            
+        }		
+	}
     
     
 }

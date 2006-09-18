@@ -40,7 +40,7 @@ public class UpdateStatisticsCommand implements ICommand {
 	}
 
 	public void execute() {
-        final String sqlSep = _session.getProperties().getSQLStatementSeparator();
+        final String sqlSep = _session.getDriver().getStatementSeparator();
         final IObjectTreeAPI api = _session.getSessionInternalFrame().getObjectTreeAPI();
 		final IDatabaseObjectInfo[] dbObjs = api.getSelectedDatabaseObjects();
 

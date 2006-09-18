@@ -39,7 +39,7 @@ import net.sourceforge.squirrel_sql.fw.util.StringManagerFactory;
 import net.sourceforge.squirrel_sql.fw.util.log.ILogger;
 import net.sourceforge.squirrel_sql.fw.util.log.LoggerController;
 /**
- * @version 	$Id: DropTablesCommand.java,v 1.9 2006-04-22 15:27:04 gerdwagner Exp $
+ * @version 	$Id: DropTablesCommand.java,v 1.9.2.1 2006-09-18 09:38:24 manningr Exp $
  * @author		Johan Compagner
  */
 public class DropTablesCommand implements ICommand
@@ -98,7 +98,7 @@ public class DropTablesCommand implements ICommand
 	 */
 	public void execute()
 	{
-		final String sqlSep = _session.getProperties().getSQLStatementSeparator();
+		final String sqlSep = _session.getDriver().getStatementSeparator();
 		final StringBuffer buf = new StringBuffer();
         boolean isFrontBase = isFrontBaseSession();
         for (int i = 0; i < _tables.length; i++)

@@ -38,6 +38,7 @@ public interface ISQLDriver extends IHasIdentifier, Comparable
 		String NAME = "name";
 		String URL = "url";
         String WEBSITE_URL = "websiteUrl";
+        String STATEMENT_SEPARATOR = "statementSeparator";
 	}
 
 	/**
@@ -104,4 +105,25 @@ public interface ISQLDriver extends IHasIdentifier, Comparable
     String getWebSiteUrl();
     
     void setWebSiteUrl(String url) throws ValidationException;
+    
+    /**
+	 * If the database server has a command line utility which can be used to 
+	 * execute scripts, then this would be the character or character sequence 
+	 * that is accepted by the utility to separate different SQL statements 
+	 * from each other.  For example, Oracle has SQL-Plus which accepts ";".
+	 * However, Sybase uses "GO" as the statement separator.
+	 *  
+     * @return the SQL statement separator.
+     */    
+    String getStatementSeparator();
+    
+	/**
+	 * Sets the SQL statement separator. 
+	 * 
+	 * @param separator a string of chars to interpret as indicating where one
+	 *                  statement ends and another begins.
+	 *                  
+	 * @throws ValidationException if the input value failed validation
+	 */    
+    void setStatementSeparator(String separator) throws ValidationException;
 }

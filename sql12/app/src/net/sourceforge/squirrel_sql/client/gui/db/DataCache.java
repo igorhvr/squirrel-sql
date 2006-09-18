@@ -357,7 +357,7 @@ public class DataCache
             else
             {
                fixupDrivers();
-                    mergeDefaultWebsites(dftDriversURL);
+               mergeDefaults(dftDriversURL);
             }
          }
          catch (FileNotFoundException ex)
@@ -597,7 +597,7 @@ public class DataCache
      * the currently loaded drivers and set the website url.  That is what this 
      * method does.
      */
-    private void mergeDefaultWebsites(URL defaultDriversUrl)
+    private void mergeDefaults(URL defaultDriversUrl)
     {
         InputStreamReader isr = null;
         ArrayList missingDrivers = new ArrayList();
@@ -615,10 +615,19 @@ public class DataCache
                     if (cachedDriver.getWebSiteUrl() == null
                             || "".equals(cachedDriver.getWebSiteUrl()))
                     {
-                        if (defaultDriver.getWebSiteUrl() != null) {
-                            cachedDriver.setWebSiteUrl(defaultDriver.getWebSiteUrl());
+                    	String defaultWebSiteUrl = defaultDriver.getWebSiteUrl();
+                        if (defaultWebSiteUrl != null) {
+                            cachedDriver.setWebSiteUrl(defaultWebSiteUrl);
                         }
                     }
+                    if (cachedDriver.getStatementSeparator() == null
+                    		|| "".equals(cachedDriver.getStatementSeparator()))
+            		{
+                        String defaultStmtSep = defaultDriver.getStatementSeparator();
+                        if (defaultStmtSep != null) {
+                        	cachedDriver.setStatementSeparator(defaultStmtSep);
+                        }            	
+            		}
                 }
             }
         } catch (Exception ex) {

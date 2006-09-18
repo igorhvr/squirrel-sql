@@ -144,7 +144,7 @@ public class SessionProperties implements Cloneable, Serializable
    private boolean _showToolbar = true;
 
    /** Used to separate SQL multiple statements. */
-   private String _sqlStmtSep = ";";
+   //private String _sqlStmtSep = ";";
 
    /** Used to indicate a &quot;Start Of Line&quot; comment in SQL. */
    private String _solComment = "--";
@@ -581,43 +581,6 @@ public class SessionProperties implements Cloneable, Serializable
          getPropertyChangeReporter().firePropertyChange(
             IPropertyNames.SQL_LIMIT_ROWS,
             oldValue, _sqlLimitRows);
-      }
-   }
-
-
-   /**
-    * Retrieve the string used to separate multiple SQL statements. Possible
-    * examples are ";" or "GO";
-    *
-    * @return		String used to separate SQL statements.
-    */
-   public String getSQLStatementSeparator()
-   {
-      return _sqlStmtSep;
-   }
-
-   /**
-    * Set the string used to separate multiple SQL statements. Possible
-    * examples are ";" or "GO";
-    *
-    * @param	value	Separator string.
-    */
-   public void setSQLStatementSeparator(String value)
-   {
-      // It causes a lot of pain in serveral places to cope with nulls or
-      // emptys here.
-      if(null == value || 0 == value.trim().length())
-      {
-         value =";";
-      }
-
-      if (!_sqlStmtSep.equals(value))
-      {
-         final String oldValue = _sqlStmtSep;
-         _sqlStmtSep = value;
-         getPropertyChangeReporter().firePropertyChange(
-            IPropertyNames.SQL_STATEMENT_SEPARATOR_STRING,
-            oldValue, _sqlStmtSep);
       }
    }
 

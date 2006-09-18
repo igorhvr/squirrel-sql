@@ -136,7 +136,8 @@ public class MockSQLDriver implements ISQLDriver {
      */
     public String getWebSiteUrl() {
         // TODO Auto-generated method stub
-        return null;
+    	System.err.println("MockSQLDriver.getWebSiteUrl: stub not yet implemented");
+    	return null;
     }
 
     /* (non-Javadoc)
@@ -144,7 +145,21 @@ public class MockSQLDriver implements ISQLDriver {
      */
     public void setWebSiteUrl(String url) throws ValidationException {
         // TODO Auto-generated method stub
-        
+    	System.err.println("MockSQLDriver.setWebSiteUrl: stub not yet implemented");
     }
+
+	public String getStatementSeparator() {
+		// TODO Auto-generated method stub
+		System.err.println("MockSQLDriver.getStatementSeparator: stub not yet implemented");		
+		return null;
+	}
+
+	public void setStatementSeparator(String separator) throws ValidationException {
+		System.err.println("MockSQLDriver.setStatementSeparator: stub not yet implemented");
+		// TODO Auto-generated method stub
+		
+	}
+    
+    
 
 }

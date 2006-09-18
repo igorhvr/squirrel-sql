@@ -68,7 +68,7 @@ public class DropDatabaseCommand implements ICommand
 	{
 		if (_dbs.length > 0)
 		{
-			final String sqlSep = _session.getProperties().getSQLStatementSeparator();
+			final String sqlSep = _session.getDriver().getStatementSeparator();
 			final StringBuffer buf = new StringBuffer();
 			for (int i = 0; i < _dbs.length; i++)
 			{

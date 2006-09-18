@@ -43,7 +43,7 @@ public class ShrinkDatabaseFileCommand implements ICommand {
 	}
 
 	public void execute() {
-		final String sqlSep = _session.getProperties().getSQLStatementSeparator();
+		final String sqlSep = _session.getDriver().getStatementSeparator();
 		final StringBuffer buf = new StringBuffer();
         buf.append("USE ");
         buf.append(_catalogName);

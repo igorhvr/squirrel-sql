@@ -47,7 +47,7 @@ public class ShowStatisticsCommand implements ICommand {
 
 	public void execute() {
         StringBuffer sqlBuffer = new StringBuffer();
-        final String sqlSep = _session.getProperties().getSQLStatementSeparator();
+        final String sqlSep = _session.getDriver().getStatementSeparator();
         sqlBuffer.append("DBCC SHOW_STATISTICS([");
         sqlBuffer.append(_tableInfo.getCatalogName());
         sqlBuffer.append(".");

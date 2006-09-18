@@ -37,7 +37,7 @@ import net.sourceforge.squirrel_sql.fw.util.StringManagerFactory;
 import net.sourceforge.squirrel_sql.fw.util.log.ILogger;
 import net.sourceforge.squirrel_sql.fw.util.log.LoggerController;
 /**
- * @version 	$Id: DeleteTablesCommand.java,v 1.1 2006-02-04 16:05:55 manningr Exp $
+ * @version 	$Id: DeleteTablesCommand.java,v 1.1.2.1 2006-09-18 09:38:24 manningr Exp $
  * @author		Rob Manning
  */
 public class DeleteTablesCommand implements ICommand
@@ -87,7 +87,7 @@ public class DeleteTablesCommand implements ICommand
 	 */
 	public void execute()
 	{
-		final String sqlSep = _session.getProperties().getSQLStatementSeparator();
+		final String sqlSep = _session.getDriver().getStatementSeparator();
         final SQLDatabaseMetaData md = _session.getSQLConnection().getSQLMetaData();
 		final StringBuffer buf = new StringBuffer();
         for (int i = 0; i < _tables.length; i++)
