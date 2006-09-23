@@ -82,17 +82,17 @@ public class SGATracePanel extends JPanel
           "                  'N/A', "+
           "                  ROUND ( a.Sorts / a.Rows_Processed, "+
           "                          3 ) ), "+
-          "         DECODE ( a.Rows_Processed, "+
+          "         DECODE ( a.Rows_Processed, "+  // 15
           "                  0, "+
           "                  'N/A', "+
           "                  ROUND ( a.Disk_Reads / a.Rows_Processed, "+
           "                          3 ) ) , "+
-          "         DECODE ( a.Rows_Processed, "+
+          "         DECODE ( a.Rows_Processed, "+  // 16
           "                  0, "+
           "                  'N/A', "+
           "                  ROUND ( a.Buffer_Gets / a.Rows_Processed, "+
           "                          3 ) ), "+
-          "         a.Address || ':' || a.Hash_Value "+
+          "         a.Address || ':' || a.Hash_Value "+  // 17
           "    FROM v$sqlarea a, "+
           "         sys.all_users b "+
           "   WHERE a.parsing_user_id = b.user_id ";
@@ -216,27 +216,28 @@ public class SGATracePanel extends JPanel
               ResultSet rs = s.getResultSet();
               DefaultTableModel tm = createTableModel();
               while (rs.next()) {
-                String sqlText = rs.getString(1);
-                String flt = rs.getString(2);
-                String schema = rs.getString(3);
-                String calls = rs.getString(4);
-                String executions = rs.getString(5);
-                String sorts = rs.getString(6);
-                String diskReads = rs.getString(7);
-                String bufGets = rs.getString(8);
-                String rows = rs.getString(9);
-                String sortsExec = rs.getString(10);
-                String diskReadsExec = rs.getString(11);
-                String rowsExec = rs.getString(12);
-                String sortsRows = rs.getString(13);
-                String diskReadsRow = rs.getString(14);
-                String bufGetsRow = rs.getString(15);
+                String sqlText = rs.getString(1);         //SQL Text
+                String flt = rs.getString(2);             //First Load Time
+                String schema = rs.getString(3);          //Parse Schema
+                String calls = rs.getString(4);           //Parse Calls
+                String executions = rs.getString(5);      //Executions
+                String sorts = rs.getString(6);           //Sorts
+                String diskReads = rs.getString(7);       //Disk Reads
+                String bufGets = rs.getString(8);         //Buffer Gets
+                String rows = rs.getString(9);            //Rows
+                String sortsExec = rs.getString(10);      //Sorts per Exec
+                String diskReadsExec = rs.getString(11);  //Disk Reads per Exec
+                String bufGetsExec = rs.getString(12);    //Buffer Gets per Exec
+                String rowsExec = rs.getString(13);       //Rows per Exec
+                String sortsRows = rs.getString(14);      //Sorts per Row
+                String diskReadsRow = rs.getString(15);   //Disk Reads per Row
+                String bufGetsRow = rs.getString(16);     //Buffer Gets per Row
 
                 //Should probably create my own table model but i am being a bit slack.
                 tm.addRow(new Object[] {sqlText, flt, schema, calls, executions,
                                         sorts, diskReads, bufGets, rows, sortsExec,
-                                        diskReadsExec, rowsExec, sortsRows, diskReadsRow,
-                                        bufGetsRow});
+                                        diskReadsExec, bufGetsExec, rowsExec, 
+                                        sortsRows, diskReadsRow, bufGetsRow});
               }
               _sgaTrace.setModel(tm);
               if (!hasResized) {
