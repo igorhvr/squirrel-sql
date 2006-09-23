@@ -20,36 +20,41 @@ package net.sourceforge.squirrel_sql.plugins.oracle.explainplan;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JOptionPane;
-import javax.swing.JTable;
-import javax.swing.JTree;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import java.sql.*;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.ArrayList;
-import java.math.BigDecimal;
-import com.sun.treetable.*;
+
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.table.TableColumnModel;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+
+import net.sourceforge.squirrel_sql.client.session.ISQLEntryPanel;
+import net.sourceforge.squirrel_sql.client.session.ISQLPanelAPI;
 import net.sourceforge.squirrel_sql.client.session.ISession;
-import net.sourceforge.squirrel_sql.client.session.SQLExecuterTask;
-import net.sourceforge.squirrel_sql.client.session.DefaultSQLExecuterHandler;
 import net.sourceforge.squirrel_sql.client.session.event.ISQLResultExecuterTabListener;
 import net.sourceforge.squirrel_sql.client.session.event.SQLResultExecuterTabEvent;
 import net.sourceforge.squirrel_sql.client.session.mainpanel.ISQLResultExecuter;
-import net.sourceforge.squirrel_sql.client.session.ISQLEntryPanel;
-import net.sourceforge.squirrel_sql.client.session.ISQLPanelAPI;
 import net.sourceforge.squirrel_sql.fw.id.IntegerIdentifierFactory;
+import net.sourceforge.squirrel_sql.fw.util.StringManager;
+import net.sourceforge.squirrel_sql.fw.util.StringManagerFactory;
 import net.sourceforge.squirrel_sql.fw.util.log.ILogger;
 import net.sourceforge.squirrel_sql.fw.util.log.LoggerController;
-import net.sourceforge.squirrel_sql.fw.util.StringManagerFactory;
-import net.sourceforge.squirrel_sql.fw.util.StringManager;
+
+import com.sun.treetable.AbstractTreeTableModel;
+import com.sun.treetable.JTreeTable;
+import com.sun.treetable.TreeTableModel;
 
 
 /**
@@ -75,6 +80,33 @@ public class ExplainPlanExecuter
 
   private JTreeTable treeTable;
 
+  private static interface i18n {
+      //i18n[ExplainPlanExecuter.numberColHeader=#]
+      String NUMBER_COL_HEADER = 
+          s_stringMgr.getString("ExplainPlanExecuter.numberColHeader");
+      //i18n[ExplainPlanExecuter.operationColHeader=Operation]      
+      String OPERATION_COL_HEADER = 
+          s_stringMgr.getString("ExplainPlanExecuter.operationColHeader");
+      //i18n[ExplainPlanExecuter.optionsColHeader=Options]      
+      String OPTIONS_COL_HEARER = 
+          s_stringMgr.getString("ExplainPlanExecuter.optionsColHeader");
+      //i18n[ExplainPlanExecuter.objectNameColHeader=Object Name]      
+      String OBJECT_NAME_COL_HEADER = 
+          s_stringMgr.getString("ExplainPlanExecuter.objectNameColHeader");
+      //i18n[ExplainPlanExecuter.modeColHeader=Mode]      
+      String MODE_COL_HEADER = 
+          s_stringMgr.getString("ExplainPlanExecuter.modeColHeader");
+      //i18n[ExplainPlanExecuter.costColHeader=Cost]      
+      String COST_COL_HEADER = 
+          s_stringMgr.getString("ExplainPlanExecuter.costColHeader");
+      //i18n[ExplainPlanExecuter.bytesColHeader=Bytes]      
+      String BYTES_COL_HEADER = 
+          s_stringMgr.getString("ExplainPlanExecuter.bytesColHeader");
+      //i18n[ExplainPlanExecuter.cardinalityColHeader=Cardinality]      
+      String CARDINALITY_COL_HEADER = 
+          s_stringMgr.getString("ExplainPlanExecuter.cardinalityColHeader");
+  }
+  
   /**
 	* Ctor.
 	*
@@ -424,15 +456,15 @@ public class ExplainPlanExecuter
 
   public static class ExplainPlanModel extends AbstractTreeTableModel {
 		// Names of the columns.
-		private final String[]  cNames = {"#",
-														 "Operation",
-														 "Options",
-														 "Object Name",
-														 "Mode",
-														 "Cost",
-														 "Bytes",
-														 "Cardinality",
-														};
+		private final String[]  cNames = {i18n.NUMBER_COL_HEADER,
+                                          i18n.OPERATION_COL_HEADER,
+                        		          i18n.OPTIONS_COL_HEARER,
+                                          i18n.OBJECT_NAME_COL_HEADER,
+                                          i18n.MODE_COL_HEADER,
+                                          i18n.COST_COL_HEADER,
+                                          i18n.BYTES_COL_HEADER,
+                                          i18n.CARDINALITY_COL_HEADER,
+									     };
 
 		// Types of the columns.
 		private final Class[]  cTypes = { TreeTableModel.class,
