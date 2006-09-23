@@ -34,6 +34,8 @@ import net.sourceforge.squirrel_sql.fw.id.IHasIdentifier;
 import net.sourceforge.squirrel_sql.fw.id.IIdentifier;
 import net.sourceforge.squirrel_sql.fw.id.IntegerIdentifier;
 import net.sourceforge.squirrel_sql.fw.util.BaseException;
+import net.sourceforge.squirrel_sql.fw.util.StringManager;
+import net.sourceforge.squirrel_sql.fw.util.StringManagerFactory;
 import net.sourceforge.squirrel_sql.fw.util.log.ILogger;
 import net.sourceforge.squirrel_sql.fw.util.log.LoggerController;
 /**
@@ -48,13 +50,19 @@ abstract class AbstractPlasticController extends DefaultLookAndFeelController
 	private static ILogger s_log =
 		LoggerController.createLogger(AbstractPlasticController.class);
 
+    /** Internationalized strings for this class. */
+    private static final StringManager s_stringMgr =
+        StringManagerFactory.getStringManager(AbstractPlasticController.class);
+
    /**
 	 * This interface defines locale specific strings. This should be
 	 * replaced with a property file.
 	 */
-	protected interface i18n
+	protected static interface i18n
 	{
-		String THEME = "Theme:";
+        //i18n[AbstractPlasticController.themeLabel=Theme:]
+		String THEME = 
+            s_stringMgr.getString("AbstractPlasticController.themeLabel");
 	}
 
 	/** Class names of all the Plastic themes. */
