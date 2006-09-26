@@ -26,11 +26,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -82,8 +84,14 @@ public class ExplainPlanExecuter
 
   private JTreeTable treeTable;
 
+  private String _planTableName = "PLAN_TABLE";
+  
   private static String USER_PLAN_TABLE_SQL = 
       "SELECT 1 from USER_TABLES WHERE UPPER(TABLE_NAME) = UPPER(?)";
+
+  private static String ALL_PLAN_TABLE_SQL = 
+      "SELECT OWNER, TABLE_NAME " +
+      "from ALL_TABLES WHERE UPPER(TABLE_NAME) = UPPER(?)";
   
   private static interface i18n {
       //i18n[ExplainPlanExecuter.numberColHeader=#]
@@ -191,6 +199,12 @@ public class ExplainPlanExecuter
   public void execute(ISQLEntryPanel sqlPanel) {
 	 String sqlToBeExecuted = sqlPanel.getSQLToBeExecuted();
 	 if (sqlToBeExecuted != null && (sqlToBeExecuted.trim().length() > 0)) {
+         sqlToBeExecuted = sqlToBeExecuted.trim();
+         if (sqlToBeExecuted.endsWith(";")) {
+            sqlToBeExecuted = 
+                sqlToBeExecuted.substring(0, sqlToBeExecuted.length()-1);
+            System.out.println(sqlToBeExecuted);
+        }
 		String statementId = "squirrel_exp_plan"+_idFactory.createIdentifier();
 		PreparedStatement deletePlan = null;
 		try {
@@ -366,7 +380,7 @@ public class ExplainPlanExecuter
   }
 
   public String getPlanTableName() {
-	 return "PLAN_TABLE";
+	 return _planTableName;
   }
 
   /**
@@ -387,7 +401,10 @@ public class ExplainPlanExecuter
       if (!checkedPlanTable) {
           // only check once per session
           checkedPlanTable = true;
+          
           if (!userPlanTableExists()) {
+              boolean planTableAvailable = true;
+              
               //if doesnt exist prompt to create it.
               
               //i18n[ExplainPlanExecuter.createPlanTableMsg=The Oracle Plan 
@@ -408,28 +425,126 @@ public class ExplainPlanExecuter
                                                 JOptionPane.YES_NO_OPTION,
                                                 JOptionPane.QUESTION_MESSAGE);
               if (result == JOptionPane.YES_OPTION) {
-                  //Create the Plan table
-                  String createPlanTableSQL = 
-                      getCreatePlanTableSQL(getPlanTableName()); 
-                  Statement stmt = null;
-                  try {
-                      ISession session = getSession();
-                      SQLConnection con = session.getSQLConnection();
-                      stmt = con.createStatement();
-                      stmt.execute(createPlanTableSQL);
-                      SchemaInfo schemaInfo = session.getSchemaInfo();
-                      schemaInfo.refershCacheForSimpleTableName("PLAN_TABLE");
-                  } catch (SQLException ex) {
-                      getSession().getMessageHandler().showErrorMessage(ex);
-                      s_log.error(ex);
-                  } finally {
-                      if (stmt != null) try {stmt.close();} catch (SQLException e) {}
-                  }
+                  planTableAvailable = createLocalPlanTable();
+              } else {
+                  planTableAvailable = getAlternatePlanTable(getPlanTableName());
+              }
+              if (!planTableAvailable) {
+                  // Tell the user that they won't be able to show the explain plan
+                  
+                  JFrame f = _session.getApplication().getMainFrame();                  
+                  //i18n[ExplainPlanExecuter.planTableUnavailable=Explain plans 
+                  //will be unavailable for this session]
+                  msg = 
+                      s_stringMgr.getString(
+                              "ExplainPlanExecuter.planTableUnavailable");
+                  
+                  //i18n[ExplainPlanExecuter.planTableUnavailableTitle=
+                  //PLAN_TABLE not found]
+                  title = 
+                      s_stringMgr.getString(
+                              "ExplainPlanExecuter.planTableUnavailableTitle");
+                      
+                  JOptionPane.showMessageDialog(f, 
+                                                msg, 
+                                                "title", 
+                                                JOptionPane.INFORMATION_MESSAGE);
+                  
               }
           } 
       }
   }
 
+  private boolean createLocalPlanTable() {
+      boolean result = true;
+      String createPlanTableSQL = 
+          getCreatePlanTableSQL(getPlanTableName()); 
+      Statement stmt = null;
+      try {
+          ISession session = getSession();
+          SQLConnection con = session.getSQLConnection();
+          stmt = con.createStatement();
+          stmt.execute(createPlanTableSQL);
+          SchemaInfo schemaInfo = session.getSchemaInfo();
+          schemaInfo.refershCacheForSimpleTableName("PLAN_TABLE");
+      } catch (SQLException ex) {
+          result = false;
+          getSession().getMessageHandler().showErrorMessage(ex);
+          s_log.error(ex);
+      } finally {
+          if (stmt != null) try {stmt.close();} catch (SQLException e) {}
+      }      
+      return result;
+  }
+  
+  /**
+   * Look for a PLAN_TABLE in another schema that we may be able to access 
+   * using the following SQL:
+   * 
+   *  "SELECT OWNER, TABLE_NAME " +
+      "from ALL_TABLES WHERE UPPER(TABLE_NAME) = UPPER(?)";
+   * 
+   */
+  private boolean getAlternatePlanTable(String planTableName) {
+      PreparedStatement pstmt = null;
+      ResultSet rs = null;
+      ArrayList planTableList = new ArrayList();
+      try {
+          SQLConnection con = _session.getSQLConnection();
+          pstmt = con.prepareStatement(ALL_PLAN_TABLE_SQL);
+          pstmt.setString(1, planTableName);
+          rs = pstmt.executeQuery();
+          while (rs.next()) {
+              String owner = rs.getString(1);
+              String tableName = rs.getString(2);
+              StringBuffer tmp = new StringBuffer();
+              tmp.append(owner);
+              tmp.append(".");
+              tmp.append(tableName);
+              planTableList.add(tmp.toString());
+          }
+      } catch (SQLException e) {
+          getSession().getMessageHandler().showErrorMessage(e);
+          s_log.error(e);          
+      } finally {
+          if (rs != null) try {rs.close();} catch (SQLException e) {}
+          if (pstmt != null) try {pstmt.close();} catch (SQLException e) {}
+      }
+      if (planTableList.size() == 0) {
+          s_log.info("No PLAN_TABLE table found in view ALL_TABLES");
+          return false;
+      }
+      String[] planTables = 
+          (String[])planTableList.toArray(new String[planTableList.size()]);
+      
+      JFrame f = _session.getApplication().getMainFrame();
+      
+      //i18n[ExplainPlanExecuter.choosePlanTableMsg=Choose a PLAN_TABLE to 
+      //store the result in]
+      String message = 
+          s_stringMgr.getString("ExplainPlanExecuter.choosePlanTableMsg");
+      
+      //i18n[ExplainPlanExecuter.choosePlanTableTitle=Available PLAN_TABLEs]
+      String chooserTitle = 
+          s_stringMgr.getString("ExplainPlanExecuter.choosePlanTableMsg");
+          
+       
+      String option = 
+          (String)JOptionPane.showInputDialog(f,
+                                              message,
+                                              chooserTitle,
+                                              JOptionPane.INFORMATION_MESSAGE, 
+                                              null, 
+                                              planTables, 
+                                              planTables[0]);
+      if (option != null) {
+          _planTableName = option;
+      } else {
+          return false;
+      }      
+      return true;
+  }
+  
   /**
    * Determines if the user has a PLAN_TABLE in their schema using SQL:
    * 
